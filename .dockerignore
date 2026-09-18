@@ -1,0 +1,23 @@
+# === Caches & Runtimes ===
+**/.pytest_cache/
+**/__pycache__/
+**/.venv/
+.pytest_cache/
+.venv/
+pyvenv.cfg
+.lock
+CACHEDIR.TAG
+
+# === Critical Security (Do not bake secrets) ===
+.env
+.env.test
+.env.*
+
+# === Unnecessary Workspace Contexts ===
+terraform/
+docs/
+apps/frontend/node_modules/
+
+# === Local Scripting & Configs ===
+*.ps1
+Makefile

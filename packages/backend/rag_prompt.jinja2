@@ -1,0 +1,12 @@
+System Instructions:
+- Answer the user's question completely using ONLY the facts explicitly written in the Context list.
+- Keep your explanation brief, direct, and factual.
+- Vocabulary Guide: "frontend UI dashboard", "user interface panel", and "UI panel" all refer to the exact same component.
+
+Context:
+{% for document in documents %}
+* {{ document.content }}
+{% endfor %}
+
+Question: {{ query }}
+Answer:

@@ -1,0 +1,289 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aegisrag-backend
+  namespace: default
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: aegisrag-backend
+  template:
+    metadata:
+      labels:
+        app: aegisrag-backend
+    spec:
+      containers:
+      - name: backend-engine
+        image: aegisrag-backend:local
+        imagePullPolicy: Never # Built locally by your script
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        - name: hf-cache-storage
+          mountPath: /root/.cache/huggingface
+        env:
+        - name: CORS_ALLOWED_ORIGINS
+          value: "*"   
+        - name: AWS_ENDPOINT_URL
+          value: "http://localstack:4566"
+        - name: QDRANT_HOST
+          value: "qdrant"
+        - name: OLLAMA_URL
+          value: "http://ollama:11434"
+        - name: AWS_DEFAULT_REGION
+          value: "us-east-1"
+        - name: HF_HUB_OFFLINE
+          value: "0" 
+        - name: HF_HOME
+          value: "/root/.cache/huggingface"
+        - name: UVICORN_HOST
+          value: "0.0.0.0"
+        - name: UVICORN_PORT
+          value: "8000"
+        resources:
+          limits:
+            cpu: "2.0"       
+            memory: 2.5Gi    
+          requests:
+            cpu: "500m"
+            memory: 1Gi
+      volumes:
+      - name: hf-cache-storage
+        persistentVolumeClaim:
+          claimName: huggingface-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aegisrag-backend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8000
+    targetPort: 8000
+  selector:
+    app: aegisrag-backend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aegisrag-frontend
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aegisrag-frontend
+  template:
+    metadata:
+      labels:
+        app: aegisrag-frontend
+    spec:
+      containers:
+      - name: frontend-ui
+        image: aegisrag-frontend:local 
+        imagePullPolicy: Never 
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aegisrag-frontend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: aegisrag-frontend
+---
+# ==========================================
+# STORAGE CLAIMS (Ensures caching works)
+# ==========================================
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ollama-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: qdrant-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: huggingface-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+# ==========================================
+# INFRASTRUCTURE LAYERS
+# ==========================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qdrant
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: qdrant
+  template:
+    metadata:
+      labels:
+        app: qdrant
+    spec:
+      containers:
+      - name: qdrant-db
+        image: qdrant/qdrant:latest
+        imagePullPolicy: IfNotPresent # Caches after the first download
+        ports:
+        - containerPort: 6333
+        volumeMounts:
+        - name: qdrant-storage
+          mountPath: /qdrant/storage
+      volumes:
+      - name: qdrant-storage
+        persistentVolumeClaim:
+          claimName: qdrant-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qdrant
+spec:
+  ports:
+  - port: 6333
+    targetPort: 6333
+  selector:
+    app: qdrant
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: localstack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: localstack
+  template:
+    metadata:
+      labels:
+        app: localstack
+    spec:
+      containers:
+      - name: mock-aws
+        image: localstack/localstack:4.14
+        imagePullPolicy: IfNotPresent # Caches after the first download
+        env:
+        - name: SERVICES
+          value: "kms,iam,sts"
+        - name: AWS_DEFAULT_REGION
+          value: "us-east-1"
+        ports:
+        - containerPort: 4566
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: localstack
+spec:
+  ports:
+  - port: 4566
+    targetPort: 4566
+  selector:
+    app: localstack
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ollama
+  template:
+    metadata:
+      labels:
+        app: ollama
+    spec:
+      containers:
+      - name: local-llm
+        image: ollama/ollama:latest
+        imagePullPolicy: IfNotPresent # Caches after the first download
+        ports:
+        - containerPort: 11434
+        volumeMounts:
+        - name: ollama-storage
+          mountPath: /root/.ollama
+      volumes:
+      - name: ollama-storage
+        persistentVolumeClaim:
+          claimName: ollama-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ollama
+spec:
+  ports:
+  - port: 11434
+    targetPort: 11434
+  selector:
+    app: ollama
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: aegisrag-ingress
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: aegisrag.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: aegisrag-frontend
+            port:
+              number: 80
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: aegisrag-backend
+            port:
+              number: 8000

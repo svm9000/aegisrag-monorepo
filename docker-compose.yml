@@ -1,0 +1,82 @@
+﻿services:
+  localstack:
+    image: localstack/localstack:latest
+    container_name: aegisrag-kms
+    ports:
+      - "4566:4566"
+    environment:
+      - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN}
+      - SERVICES=kms,iam,sts
+      - AWS_DEFAULT_REGION=us-east-1
+    volumes:
+      - "localstack_data:/var/lib/localstack"
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: aegisrag-vector-db
+    ports:
+      - "6333:6333"
+    volumes:
+      - "qdrant_data:/qdrant/storage"
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: aegisrag-llm
+    ports:
+      - "11434:11434"
+    volumes:
+      - "aegisrag_persistent_llm:/root/.ollama"
+
+  # ========================================================
+  # Core Python Gateway API Engine
+  # ========================================================
+  backend:
+    build:
+      context: .
+      dockerfile: packages/backend/Dockerfile
+    container_name: aegisrag-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=mock-developer-key
+      - AWS_SECRET_ACCESS_KEY=mock-developer-secret
+      - QDRANT_HOST=qdrant
+      - OLLAMA_URL=http://ollama:11434
+      # FORCE Hugging Face to use a clean path inside the container
+      - HF_HOME=/root/.cache/huggingface
+    volumes:
+      - ./packages/backend:/app/packages/backend
+      # NEW: Maps the Hugging Face cache to its own persistent volume
+      - aegisrag_persistent_hf:/root/.cache/huggingface
+    depends_on:
+      - localstack
+      - qdrant
+      - ollama
+  
+  # ========================================================
+  # Frontend UI Layout Panel Sandbox (NEW)
+  # ========================================================
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+    container_name: aegisrag-frontend
+    ports:
+      - "3000:80"  # Exposes the Nginx web app onto local machine port 3000
+    depends_on:
+      - backend    # Ensures backend is up and running first
+
+# Register both persistent volumes at the bottom
+volumes:
+  localstack_data:
+  qdrant_data:
+  # Keeps your embedding and ranking models safe between restarts
+  aegisrag_persistent_hf:
+    name: aegisrag_persistent_hf
+    external: true
+  # Keeps your Ollama LLM models safe between restarts
+  aegisrag_persistent_llm:
+    name: aegisrag_persistent_llm
+    external: true

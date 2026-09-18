@@ -1,0 +1,23 @@
+[project]
+name = "aegisrag-backend"
+version = "2026.1.0"
+description = "AegisRAG Core Gateway Engine"
+requires-python = ">=3.11"
+
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.28.0",
+    "pydantic>=2.6.0",
+    "boto3>=1.34.0",
+    "cryptography>=42.0.0",
+    "httpx>=0.27.0",
+    "jinja2>=3.1.0",
+    "haystack-ai>=2.0.0",
+    "qdrant-haystack>=2.0.0",
+    "sentence-transformers>=2.5.0",
+    "sentence-transformers-haystack>=0.1.0",
+    "pytest>=8.0.0"
+]
+
+[tool.uv]
+managed = true

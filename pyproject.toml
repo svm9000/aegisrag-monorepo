@@ -1,0 +1,11 @@
+[project]
+name = "aegisrag-monorepo"
+version = "0.1.0"
+description = "AegisRAG Monorepo Development Environment"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.uv]
+managed = true
+# This links your workspace together so the root lockfile tracks the backend
+workspace = { members = ["packages/backend"] }
