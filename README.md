@@ -1,6 +1,6 @@
 # AegisRAG Enterprise Architecture Guide
 
-The **AegisRAG Portfolio Engine** features a production-grade multi-topology orchestrator designed to scale seamlessly from a zero-dependency local developer environment to high-availability cloud platforms. Built around an advanced **two-stage neural pipeline**, the platform couples a high-throughput dense vector retrieval layer with a high-fidelity **cross-encoder reranking engine**. This setup prevents large language model (LLM) hallucinations, lowers processing costs, and ensures enterprise-grade security at scale.
+The **AegisRAG Portfolio Engine** features a production-grade multi-topology orchestrator designed to scale seamlessly from a zero-dependency local developer environment to high-availability cloud platforms [1.2.6]. Built around an advanced **two-stage neural pipeline**, the platform couples a high-throughput dense vector retrieval layer with a high-fidelity **cross-encoder reranking engine** [1.2.6]. This setup prevents large language model (LLM) hallucinations, lowers processing costs, and ensures enterprise-grade security at scale [1.2.6].
 
 ---
 
@@ -26,7 +26,7 @@ The core automation layer of this implementation (`managenew.ps1`) is engineered
 | **Dependency Lock** | `uv sync` & `npm install` | Production Multi-Stage Dockerfile | Clustered Local Registry |
 | **Network Path** | Local Loopback (`localhost`) | Compose Bridge Network | ClusterIP & Headless Port-Forwards |
 | **Model Storage** | `.cache/huggingface` Host Directory | External Named Volume | `PersistentVolumeClaim` Storage |
-| **API Documentation** | `http://127.0.0` | `http://127.0.0` | Proxy Bridge Tunneling |
+| **API Documentation** | `http://127.0.0.1:8000/docs` | `http://127.0.0.1:8000/docs` | Proxy Bridge Tunneling |
 
 ---
 
@@ -131,3 +131,49 @@ The system uses explicit PowerShell output parameters to track the status of cur
 * 🟡 **`[INIT]`** Provisions external persistent file paths.
 * 🔵 **`[BUILD]`** Handles Docker Buildx multi-stage caching.
 * 🟢 **`[SUCCESS]`** Verifies active reverse proxies and endpoints.
+
+---
+
+## Appendix: Verified Architecture Runtime Evidence
+
+The following data capture represents live execution verification inside the isolated Kubernetes cluster layout topology running on Windows 11.
+
+### Production UI & Telemetry Snapshot
+![AegisRAG Portfolio Sandbox System Telemetry Dashboard Run](docs/assets/sandbox_screenshot.png)
+
+### 1. Secure Context Document Ingestion Phase
+**Payload Input:**
+```text
+AegisRAG production architecture deployments must enforce asymmetric envelope cryptography. All local offline model routing targets utilize a native Ollama orchestration runner mapped over port 11434. The production cluster infrastructure is currently scheduled across custom isolated Kubernetes GPU node pools to maximize token generation throughput and guarantee complete data privacy.
+```
+
+**Cryptographic Telemetry Output Captured:**
+```text
+[11:54:08] [NETWORK] Transmitting encrypted envelope payload to secure endpoint gateway...
+[11:54:08] [CRYPTO] Packaging raw text into secure network payload structure...
+[11:54:11] [SUCCESS] Ingest processing completion registered dynamically.
+```
+*(Result: Context data successfully wrapped via Base64, processed by the cryptographic gateway perimeter, hashed, and indexed natively into the running vector repository).*
+
+### 2. Neural Query Synthesis Phase
+**User Request:**
+```text
+What is the port definition and network deployment profile for the local Ollama service?
+```
+
+**Target Engine Output Signature:**
+```text
+Answer: Based on the verified system documentation context, the local Ollama service orchestrator is natively mapped over port 11434.
+```
+
+**Pipeline Performance Metrics:**
+```text
+Retrieved Docs: 1 | Post-Rerank: 1
+```
+
+**Cryptographic Telemetry Output Captured:**
+```text
+[11:56:34] [NETWORK] Executing cross-encoder semantic retrieval query transaction...
+[11:56:34] [CRYPTO] Packaging raw text into secure network payload structure...
+[11:57:46] [SUCCESS] Response payload processed completely from neural context synthesis.
+```
