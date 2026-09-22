@@ -1,6 +1,16 @@
 # AegisRAG Enterprise Architecture Guide
 
-The **AegisRAG Portfolio Engine** features a production-grade multi-topology orchestrator designed to scale seamlessly from a zero-dependency local developer environment to high-availability cloud platforms [1.2.6]. Built around an advanced **two-stage neural pipeline**, the platform couples a high-throughput dense vector retrieval layer with a high-fidelity **cross-encoder reranking engine** [1.2.6]. This setup prevents large language model (LLM) hallucinations, lowers processing costs, and ensures enterprise-grade security at scale [1.2.6].
+The **AegisRAG Portfolio Engine** features a production-grade multi-topology orchestrator designed to scale seamlessly from a zero-dependency local developer environment to high-availability cloud platforms. Built around an advanced **two-stage neural pipeline**, the platform couples a high-throughput dense vector retrieval layer with a high-fidelity **cross-encoder reranking engine**. This setup prevents large language model (LLM) hallucinations, lowers processing costs, and ensures enterprise-grade security at scale.
+
+---
+
+### 🛡️ Naming Philosophy: Why AegisRAG?
+The system naming represents the union of classical protection mechanisms with modern artificial intelligence frameworks:
+* **The "Aegis" Element (Defensive Shield):** Represents the system's dual-layer protection matrix. 
+  1. *Data Security:* Shields incoming payloads via **AES-GCM envelope encryption** and **AWS KMS** verification bounds.
+  2. *Context Quality:* Shields the local LLM from hallucinations using a strict **Cross-Encoder Similarity Reranker** (`bge-reranker-v2-m3`) threshold gate to block irrelevant noise.
+* **The "RAG" Element (Retrieval-Augmented Generation):** Executes dense vector search lookups over **Qdrant** indices to synthesize responses based *only* on verified, deterministic context facts.
+* **The Local Paradigm (Air-Gapped Privacy):** Implements a serverless **Ollama** engine context locally, ensuring a **zero-token financial model** where corporate data never leaves the target host boundary.
 
 ---
 
