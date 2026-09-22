@@ -20,7 +20,7 @@ The system naming represents the union of classical protection mechanisms with m
 ---
 
 ## 2. Platform Compatibility & Cross-OS Portability
-The core automation layer of this implementation (`managenew.ps1`) is engineered natively for **Windows 11 using PowerShell Core 7+ / Windows PowerShell 5.1**. However, the engine's design follows standard architectural decoupling rules, allowing it to be adapted for other Unix-like systems if needed:
+The core automation layer of this implementation (`runautomation.ps1`) is engineered natively for **Windows 11 using PowerShell Core 7+ / Windows PowerShell 5.1**. However, the engine's design follows standard architectural decoupling rules, allowing it to be adapted for other Unix-like systems if needed:
 
 * **Host OS Support:** Currently running natively on Windows 11 with fully functional automated configurations.
 * **Cross-OS Portability:** Because the infrastructure relies on containerized engines (Docker Compose and Kubernetes), the execution pipeline can be extended easily to **Linux (Ubuntu/RHEL)** and **macOS** environments by porting the PowerShell automation parameters over to standard Bash or Zsh shell control scripts (`.sh`).
@@ -92,10 +92,10 @@ Runs directly on your host machine utilizing lightweight environment control fil
 
 ```powershell
 # 1. Clean up stale workspace background instances
-.\managenew.ps1 -Action clean -Engine local
+.\runautomation.ps1 -Action clean -Engine local
 
 # 2. Synchronize environments, fetch dependencies, and launch applications natively
-.\managenew.ps1 -Action verify-all -Engine local
+.\runautomation.ps1 -Action verify-all -Engine local
 ```
 
 ### Mode B: Containerized Docker Compose (`docker`)
@@ -103,10 +103,10 @@ Isolates both application layers and heavy backend models within structured cont
 
 ```powershell
 # 1. Execute an environmental process purge
-.\managenew.ps1 -Action clean -Engine docker
+.\runautomation.ps1 -Action clean -Engine docker
 
 # 2. Compile image layers and bring up infrastructure dependencies
-.\managenew.ps1 -Action verify-all -Engine docker
+.\runautomation.ps1 -Action verify-all -Engine docker
 ```
 
 ### Mode C: Kubernetes Cluster Management (`k8s`)
@@ -114,10 +114,10 @@ Deploys clustered replicas using storage provisions and native proxy routes insi
 
 ```powershell
 # 1. Purge conflicting contexts and active background routing blocks
-.\managenew.ps1 -Action clean -Engine k8s
+.\runautomation.ps1 -Action clean -Engine k8s
 
 # 2. Build cluster image contexts, apply manifests, and initialize headless tunnels
-.\managenew.ps1 -Action verify-all -Engine k8s
+.\runautomation.ps1 -Action verify-all -Engine k8s
 ```
 
 ---
